@@ -1,6 +1,13 @@
 import os
 
-from crewai import Agent
+from crewai import Agent, LLM
+
+analysis_llm = LLM(
+    model=os.getenv("ANALYST_AGENT_LLM"),
+    api_key=os.getenv("GROQ_API_KEY"),
+    temperature = float(os.getenv("ANALYST_AGENT_TEMPERATURE")),
+    max_tokens=600
+)
 
 analyst_agent = Agent(
     role="Research Analyst",
@@ -18,7 +25,7 @@ analyst_agent = Agent(
         "highlighting significant findings, and eliminating redundant information."
     ),
 
-    llm=os.getenv("ANALYST_AGENT_LLM"),
-
+    llm=analysis_llm,
+    
     verbose=True
 )

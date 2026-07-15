@@ -1,6 +1,13 @@
 import os
 
-from crewai import Agent
+from crewai import Agent, LLM
+
+writer_llm = LLM(
+    model=os.getenv("WRITER_AGENT_LLM"),
+    api_key=os.getenv("GROQ_API_KEY"),
+    temperature = float(os.getenv("WRITER_AGENT_TEMPERATURE")),
+    max_tokens=1200
+)
 
 writer_agent = Agent(
     role="Technical Report Writer",
@@ -16,7 +23,7 @@ writer_agent = Agent(
         "Your reports are well-organized, informative, and easy to understand."
     ),
 
-    llm=os.getenv("WRITER_AGENT_LLM"),
+    llm=writer_llm,
 
     verbose=True
 )

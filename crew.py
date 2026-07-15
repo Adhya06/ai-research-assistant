@@ -1,6 +1,6 @@
 import os
 
-from crewai import Crew
+from crewai import Crew, Process
 
 from agents.research_agent import research_agent
 from agents.analyst_agent import analyst_agent
@@ -27,7 +27,7 @@ research_crew = Crew(
         writing_task,
         review_task
     ],
-
+    process=Process.sequential,
     verbose=True
 )
 

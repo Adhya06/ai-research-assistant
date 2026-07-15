@@ -18,6 +18,7 @@ research_task = Task(
         - Future outlook
 
         Use reliable online sources and provide factual information.
+        Search the web. Prefer three comprehensive search instead of many narrow searches.
         """
     ),
 

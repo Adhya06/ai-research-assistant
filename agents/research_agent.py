@@ -1,10 +1,15 @@
 import os
 
-from crewai import Agent
+from crewai import Agent, LLM
 from crewai_tools import SerperDevTool
 
-# Search tool used by this agent
-search_tool = SerperDevTool()
+
+research_llm = LLM(
+    model=os.getenv("RESEARCH_AGENT_LLM"),
+    api_key=os.getenv("GROQ_API_KEY"),
+    temperature = float(os.getenv("RESEARCH_AGENT_TEMPERATURE")),
+    max_tokens=1000
+)
 
 research_agent = Agent(
     role="Senior Research Specialist",
@@ -20,10 +25,10 @@ research_agent = Agent(
         "Your responsibility is to collect factual information, statistics, "
         "recent developments, and references while avoiding unsupported claims."
     ),
+    tools=[SerperDevTool()],
+    max_iter=3,
 
-    tools=[search_tool],
-
-    llm=os.getenv("RESEARCH_AGENT_LLM"),
+    llm=research_llm,
 
     verbose=True
 )

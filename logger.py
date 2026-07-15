@@ -18,3 +18,4 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger("ResearchAssistant")
+logger.propagate = False

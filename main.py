@@ -1,6 +1,7 @@
 from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv
+from tools.pdf_exporter import PDFExporterTool
 
 from crew import research_crew
 from logger import logger
@@ -54,6 +55,16 @@ def main():
 
         print("\nResearch completed successfully!")
         print(f"\nReport saved at:\n{report_path}")
+
+        pdf_tool = PDFExporterTool()
+
+        pdf_path = pdf_tool.run(
+            content=report,
+            file_path="outputs/report.pdf",
+            title="Research Report"
+        )
+
+        print(pdf_path)
 
         logger.info("Research completed successfully")
 

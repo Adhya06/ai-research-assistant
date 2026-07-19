@@ -4,3 +4,4 @@ python-dotenv
 streamlit
 reportlab
 litellm==1.72.6
+pypdf

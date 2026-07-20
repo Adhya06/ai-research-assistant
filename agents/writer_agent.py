@@ -6,21 +6,25 @@ writer_llm = LLM(
     model=os.getenv("WRITER_AGENT_LLM"),
     api_key=os.getenv("GROQ_API_KEY"),
     temperature = float(os.getenv("WRITER_AGENT_TEMPERATURE")),
-    max_tokens=1200
+    max_tokens=900
 )
 
 writer_agent = Agent(
     role="Technical Report Writer",
 
     goal=(
-        "Create a professional, well-structured, and easy-to-read "
-        "research report based on the analyzed findings."
+        "Choose the most appropriate response format for the user's request. "
+        "Use paragraphs for direct questions, bullet points for comparisons, "
+        "tables when comparing multiple items, and detailed reports only for "
+        "research tasks."
+        "Do not repeat information already stated unless it is essential."
+        "Avoid generic introductions and conclusions."
+        "Focus on unique, high-value information."
+
     ),
 
     backstory=(
-        "You are an experienced technical writer skilled at presenting "
-        "complex information in a clear, concise, and professional manner. "
-        "Your reports are well-organized, informative, and easy to understand."
+       "Create professional, readable responses."
     ),
 
     llm=writer_llm,

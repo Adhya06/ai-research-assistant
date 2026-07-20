@@ -5,35 +5,53 @@ from agents.research_agent import research_agent
 research_task = Task(
     description=(
         """
-        Conduct comprehensive research on the topic: {topic}.
+        Research the topic: {{topic}}
 
-        Your research should include:
+        Understand the user's actual intent.
 
-        - A clear overview of the topic
-        - Key concepts and terminology
-        - Recent developments and trends
-        - Important statistics (if available)
-        - Benefits and applications
-        - Challenges and limitations
-        - Future outlook
+        Gather only the information necessary to answer the question.
 
-        Use reliable online sources and provide factual information.
-        Search the web. Prefer three comprehensive search instead of many narrow searches.
+        Prioritize:
+        - authoritative sources
+        - recent information
+        - concrete evidence
+        - useful statistics
+
+        Skip sections that are not relevant.
+
+        If the question is simple,
+        return concise research.
+
+        If the question is broad,
+        return comprehensive research.
+
+        Do not organize into a fixed template.
         """
     ),
 
     expected_output=(
         """
-        A well-structured research document in Markdown format containing:
+       Return ONLY this Markdown:
 
-        - Topic Overview
-        - Key Concepts
-        - Recent Developments
-        - Statistics
-        - Applications
-        - Challenges
-        - Future Outlook
-        - References
+        ## Research Notes
+
+        ### Key Facts
+        - Maximum 8 bullet points
+
+        ### Statistics
+        - Maximum 5 bullet points
+
+        ### Recent Developments
+        - Maximum 5 bullet points
+
+        ### Challenges
+        - Maximum 3 bullet points
+
+        ### Sources
+        - Maximum 5 sources
+
+        Maximum 450 words.
+
         """
     ),
 

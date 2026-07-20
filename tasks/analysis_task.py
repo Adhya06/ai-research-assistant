@@ -6,31 +6,49 @@ from tasks.research_task import research_task
 analysis_task = Task(
     description=(
         """
-        Analyze the research findings provided by the Research Specialist.
+        Analyze the research.
 
-        Your analysis should:
+        Your job is NOT to summarize.
 
-        - Organize the information logically
-        - Identify key trends and patterns
-        - Highlight the most important insights
-        - Remove repetitive information
-        - Explain the significance of the findings
-        - Identify any challenges or limitations
+        Instead:
 
-        Do not introduce new information.
-        Base your analysis only on the research findings.
-        """
+        • Explain WHY the evidence matters.
+
+        • Rank the most important findings.
+
+        • Identify relationships.
+
+        • Identify contradictions.
+
+        • Explain root causes.
+
+        • Remove weak or redundant information.
+
+        If there is nothing meaningful to analyze,
+        state that directly.        """
     ),
 
     expected_output=(
         """
-        A structured analysis in Markdown containing:
+        Return ONLY:
 
-        - Executive Summary
-        - Key Insights
-        - Major Trends
-        - Challenges
-        - Future Opportunities
+        ## Insights
+
+        - Top 5 findings
+
+        ## Trends
+
+        - Top 3 trends
+
+        ## Risks
+
+        - Top 3 risks
+
+        ## Opportunities
+
+        - Top 3 opportunities
+
+        Maximum 250 words.
         """
     ),
 

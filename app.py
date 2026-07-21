@@ -138,11 +138,18 @@ class ThreadSafeLogHandler(logging.Handler):
     def emit(self, record):
         logs_list, start_time = get_logs_for_current_thread()
         if logs_list is not None:
+            message = record.getMessage()
+            if len(message) > 140:
+                message = message[:137] + "..."
+
+            if logs_list and logs_list[-1].get("message") == message and logs_list[-1].get("level") == record.levelname:
+                return
+
             st_time = start_time if start_time is not None else record.created
             elapsed = record.created - st_time
             logs_list.append({
                 "timestamp": record.created,
-                "message": record.getMessage(),
+                "message": message,
                 "level": record.levelname,
                 "elapsed": elapsed,
                 "type": "log",
@@ -264,6 +271,17 @@ def display_history_sidebar():
     display_activity_logs()
 
 
+def _log_icon(level, entry_type, msg):
+    if level == "ERROR": return "❌"
+    if entry_type == "stdout": return "🔵"
+    m = msg.lower()
+    for kw, icon in [("start", "🟢"), ("complet", "✅"), ("success", "✅"),
+                     ("work", "🔍"), ("agent", "🔍"), ("report", "📊"),
+                     ("saved", "📊"), ("final", "✨"), ("output", "✨")]:
+        if kw in m: return icon
+    return "📝"
+
+
 def display_activity_logs():
     st.sidebar.markdown("## 🕒 Activity Timeline")
     history = st.session_state.research_history
@@ -273,37 +291,17 @@ def display_activity_logs():
         st.sidebar.info("Select a research session to view its activity log.")
         return
 
-    session = history[idx]
-    logs = session.get("logs", [])
-
+    logs = history[idx].get("logs", [])
     if not logs:
         st.sidebar.info("No activity logs for this session.")
         return
 
-    for entry in logs:
-        elapsed = entry.get("elapsed", 0)
-        message = entry.get("message", "")
-        level = entry.get("level", "INFO")
-        entry_type = entry.get("type", "log")
-
-        if level == "ERROR":
-            icon = "❌"
-        elif entry_type == "stdout":
-            icon = "🔵"
-        elif "started" in message.lower() or "start" in message.lower():
-            icon = "🟢"
-        elif "completed" in message.lower() or "success" in message.lower():
-            icon = "✅"
-        elif "working" in message.lower() or "agent" in message.lower():
-            icon = "🔍"
-        elif "report" in message.lower() or "saved" in message.lower():
-            icon = "📊"
-        elif "final" in message.lower() or "output" in message.lower():
-            icon = "✨"
-        else:
-            icon = "📝"
-
-        st.sidebar.markdown(f"{icon} **{elapsed:05.2f}s** — {message}")
+    for e in logs[-8:]:
+        message = str(e.get("message", "")).strip()
+        if len(message) > 90:
+            message = message[:87] + "..."
+        icon = _log_icon(e.get("level", "INFO"), e.get("type", "log"), message)
+        st.sidebar.markdown(f"{icon} **{e.get('elapsed', 0):05.2f}s** — {message}")
 
 
 # ── Main area ──────────────────────────────────────────────────────────────────
@@ -366,7 +364,7 @@ def run_research_target(topic, run_id, pdf_context=""):
     THREAD_RESULTS[run_id] = {"status": "running", "logs": logs_list, "start_time": start_time}
 
     logger.info("Research started")
-    logger.info(f"Topic: {topic}")
+    logger.info(f"Topic: {topic[:80]}{'...' if len(topic) > 80 else ''}")
 
     full_topic = topic
     if pdf_context:  # ADD
@@ -374,9 +372,8 @@ def run_research_target(topic, run_id, pdf_context=""):
 
     result = None
     try:
-        logger.info("CrewAI workflow started")
+        logger.info("Running research crew")
         result = research_crew.kickoff(inputs={"topic": full_topic})
-        logger.info("Research agents working")
     except Exception as exc:
         tb = traceback.format_exc()
         logger.error(f"CrewAI execution failed: {exc}")
@@ -394,7 +391,7 @@ def run_research_target(topic, run_id, pdf_context=""):
     formatted_result = ""
     try:
         formatted_result = format_research_output(result)
-        logger.info("Final output generated")
+        logger.info("Draft ready")
     except Exception as exc:
         tb = traceback.format_exc()
         logger.error(f"Output formatting failed: {exc}")
@@ -410,7 +407,7 @@ def run_research_target(topic, run_id, pdf_context=""):
         pdf_path = None
 
         try:
-            logger.info("Generating PDF report...")
+            logger.info("Generating PDF")
 
             pdf_filename = datetime.now().strftime("research_%Y-%m-%d_%H-%M-%S.pdf")
             pdf_file_path = OUTPUT_DIR / pdf_filename
@@ -425,7 +422,7 @@ def run_research_target(topic, run_id, pdf_context=""):
                 logger.error(pdf_path)
                 pdf_path = None
             else:
-                logger.info(f"PDF saved at {pdf_path}")
+                logger.info("PDF saved")
 
         except Exception as e:
             logger.error(f"PDF generation failed: {e}")
@@ -436,7 +433,7 @@ def run_research_target(topic, run_id, pdf_context=""):
         logger.error(tb)
 
     elapsed = time.time() - start_time
-    logger.info("Research completed successfully")
+    logger.info("Research complete")
     THREAD_RESULTS[run_id].update({
         "status": "success",
         "result": formatted_result,
@@ -489,7 +486,7 @@ def main_page():
         res = THREAD_RESULTS.get(run_id)
         if res is None or res.get("status") == "running":
             st.info(f"⏳ Research in progress for: **{st.session_state.current_topic}**")
-            time.sleep(0.8)
+            time.sleep(0.2)
             st.rerun()
         else:
             st.session_state.running = False
